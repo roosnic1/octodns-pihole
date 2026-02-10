@@ -10,6 +10,7 @@ authors = [
     { name = "Nico Roos", email = "nicolas.k.roos@protonmail.com"}
 ]
 dependencies = [
+    "pihole6api>=0.2.1",
     "octodns>=1.15.0",
     "requests>=2.32.5",
 ]
