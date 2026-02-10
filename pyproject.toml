@@ -1,14 +1,52 @@
+[project]
+name = "octodns-pihole"
+version = "0.0.1"
+description = "Pi-hole provider for octoDNS"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [
+    { name = "Jonathan Voss", email = "jvoss@onvox.net" },
+    { name = "Nico Roos", email = "nicolas.k.roos@protonmail.com"}
+]
+dependencies = [
+    "octodns>=1.15.0",
+    "requests>=2.32.5",
+]
+
+[project.urls]
+Repository = "https://github.com/roosnic1/octodns-pihole"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "pytest-network",
+    "requests-mock",
+    # https://black.readthedocs.io/en/stable/the_black_code_style/index.html#stability-policy
+    "black>=24.3.0,<25.0.0",
+    "isort>=5.11.5",
+    "pyflakes>=2.2.0",
+]
+
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["octodns_pihole*"]
+
 [tool.black]
-line-length=80
-skip-string-normalization=true
-skip-magic-trailing-comma=true
+line-length = 80
+skip-string-normalization = true
+skip-magic-trailing-comma = true
 
 [tool.isort]
 profile = "black"
-known_first_party="octodns_pihole"
-known_octodns="octodns"
-line_length=80
-sections="FUTURE,STDLIB,THIRDPARTY,OCTODNS,FIRSTPARTY,LOCALFOLDER"
+known_first_party = "octodns_pihole"
+known_octodns = "octodns"
+line_length = 80
+sections = "FUTURE,STDLIB,THIRDPARTY,OCTODNS,FIRSTPARTY,LOCALFOLDER"
 
 [tool.pytest.ini_options]
 filterwarnings = [
