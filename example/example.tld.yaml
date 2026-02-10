@@ -1,6 +1,7 @@
 ---
 cname1:
   type: CNAME
+  ttl: 3600
   value: test1.example.tld.
 test1:
   - type: A

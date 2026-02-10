@@ -1,7 +1,3 @@
-#
-#
-#
-
 import logging
 from collections import defaultdict
 from ipaddress import ip_address
@@ -25,11 +21,11 @@ class PiholeProvider(BaseProvider):
     SUPPORTS = set(('A', 'AAAA', 'CNAME'))
 
     def __init__(
-        self, id, url, password, tls_verify=True, totp=None, *args, **kwargs
+        self, id, url, password, *args, **kwargs
     ):
         self.log = logging.getLogger(f'PiholeProvider[{id}]')
         self.log.debug(
-            '__init__: id=%s, url=%s tls_verify=%s', id, url, tls_verify
+            '__init__: id=%s, url=%s', id, url,
         )
         super().__init__(id, *args, **kwargs)
 
