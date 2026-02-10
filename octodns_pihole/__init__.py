@@ -2,14 +2,10 @@ import logging
 from collections import defaultdict
 from ipaddress import ip_address
 
-from requests import Session
+from pihole6api import PiHole6Client
 
-from octodns import __VERSION__ as octodns_version
-from octodns.provider import ProviderException
 from octodns.provider.base import BaseProvider
 from octodns.record import Record
-
-from pihole6api import PiHole6Client
 
 
 class PiholeProvider(BaseProvider):
@@ -20,16 +16,12 @@ class PiholeProvider(BaseProvider):
     SUPPORTS_ROOT_NS = False
     SUPPORTS = set(('A', 'AAAA', 'CNAME'))
 
-    def __init__(
-        self, id, url, password, *args, **kwargs
-    ):
+    def __init__(self, id, url, password, *args, **kwargs):
         self.log = logging.getLogger(f'PiholeProvider[{id}]')
-        self.log.debug(
-            '__init__: id=%s, url=%s', id, url,
-        )
+        self.log.debug('__init__: id=%s, url=%s', id, url)
         super().__init__(id, *args, **kwargs)
 
-        self._client =  PiHole6Client(url, password)
+        self._client = PiHole6Client(url, password)
 
     def _data_for_multiple(self, type, records):
         return {
@@ -162,12 +154,18 @@ class PiholeProvider(BaseProvider):
             result = None
             match change.record._type:
                 case 'A' | 'AAAA':
-                    result = self._client.config.add_local_a_record(params['name'], params['data'])
+                    result = self._client.config.add_local_a_record(
+                        params['name'], params['data']
+                    )
                 case 'CNAME':
-                    result = self._client.config.add_local_cname(params['name'], params['data'], ttl=params['ttl'])
+                    result = self._client.config.add_local_cname(
+                        params['name'], params['data'], ttl=params['ttl']
+                    )
 
             if 'error' in result or result is None:
-                raise ValueError(f"Failed to apply change for record: {change.record.name}")
+                raise ValueError(
+                    f"Failed to apply change for record: {change.record.name}"
+                )
 
     def _apply_Update(self, change):
         self._apply_Delete(change)
@@ -180,12 +178,18 @@ class PiholeProvider(BaseProvider):
             result = None
             match change.record._type:
                 case 'A' | 'AAAA':
-                    result = self._client.config.remove_local_a_record(params['name'], params['data'])
+                    result = self._client.config.remove_local_a_record(
+                        params['name'], params['data']
+                    )
                 case 'CNAME':
-                    result = self._client.config.remove_local_cname(params['name'], params['data'], ttl=params['ttl'])
+                    result = self._client.config.remove_local_cname(
+                        params['name'], params['data'], ttl=params['ttl']
+                    )
 
             if 'error' in result or result is None:
-                raise ValueError(f"Failed to delete the record: {change.record.name}")
+                raise ValueError(
+                    f"Failed to delete the record: {change.record.name}"
+                )
 
     def _apply(self, plan):
         desired = plan.desired

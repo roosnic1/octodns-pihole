@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-octodns-pihole is an [octoDNS](https://github.com/octodns/octodns) provider that manages local DNS records (A, AAAA, CNAME) in Pi-hole v6 via its HTTP API. It follows the standard octoDNS provider pattern.
+octodns-pihole is an [octoDNS](https://github.com/octodns/octodns) provider that manages local DNS records (A, AAAA, CNAME) in Pi-hole v6. It uses the [pihole6api](https://pypi.org/project/pihole6api/) library (`PiHole6Client`) for API communication. It follows the standard octoDNS provider pattern.
 
 ## Development Commands
 
@@ -19,8 +19,8 @@ pytest --disable-network
 pytest --disable-network --cov=octodns_pihole --cov-report=term-missing
 
 # Run a single test
-pytest tests/test_pihole_client.py
-pytest tests/test_provider_octodns_pihole.py::TestPiholeProvider::test_apply
+pytest tests/test_provider_octodns_pihole.py::test_populate_A
+pytest tests/test_provider_octodns_pihole.py::test_apply_create_CNAME
 
 # Lint (pyflakes)
 pyflakes octodns_pihole/*.py tests/*.py
@@ -47,14 +47,14 @@ octodns-sync --config-file=./example/config.yaml --doit   # apply
 
 All source code lives in a single module: `octodns_pihole/__init__.py`.
 
-**PiholeClient** — HTTP client for Pi-hole API v6. Handles session-based auth (with optional TOTP 2FA). Records are cached in memory (`_host_cache`, `_cname_cache`) and bulk-applied via a single `PATCH /api/config` call.
-
-**PiholeProvider** — octoDNS `BaseProvider` subclass. Translates between octoDNS zone/record model and Pi-hole's flat host/CNAME lists. Key behaviors:
+**PiholeProvider** — octoDNS `BaseProvider` subclass. Uses `PiHole6Client` from `pihole6api` for all Pi-hole communication. Translates between octoDNS zone/record model and Pi-hole's flat host/CNAME lists. Key behaviors:
 - Pi-hole has no zone concept; `populate()` filters records by checking if the zone name appears in the FQDN
-- TTL is meaningless in Pi-hole; `_process_desired_zone()` normalizes all TTLs to `DEFAULT_TTL` (86400) to prevent false diffs
+- Config is fetched via `self._client.config.get_config()` which returns hosts and cnameRecords
+- Mutations use `self._client.config.add_local_a_record()`, `add_local_cname()`, `remove_local_a_record()`, `remove_local_cname()`
+- TTL is only meaningful for CNAME records; `_process_desired_zone()` normalizes non-CNAME TTLs to `DEFAULT_TTL` (86400) to prevent false diffs
 - Updates are implemented as delete + create
-- Host entries use format `"ip name"`, CNAME entries use `"name,target"`
+- Host entries use format `"ip name"`, CNAME entries use `"name,target,ttl"`
 
 ## Testing
 
-Tests use `pytest` with `requests_mock` for HTTP mocking and `pytest-network` to disable real network calls. Coverage must be 100% on `octodns_pihole/`. Fixtures live in `tests/fixtures/` (JSON Pi-hole API responses) and `tests/config/` (octoDNS zone YAML).
+Tests live in `tests/test_provider_octodns_pihole.py` as standalone functions (not class-based). `PiHole6Client` is mocked with `unittest.mock.MagicMock` and `patch`. Tests cover populate (per record type, zone filtering), apply (create/delete/update for each type), and error handling.
