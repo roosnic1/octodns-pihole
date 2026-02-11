@@ -34,18 +34,13 @@ class PiholeProvider(BaseProvider):
     _data_for_AAAA = _data_for_multiple
 
     def _data_for_CNAME(self, _type, records):
-        print('records', records)
         values = records[0].split(',')
 
-        data = {
+        return {
             'ttl': int(values[1]) or PiholeProvider.DEFAULT_TTL,
             'type': _type,
             'value': f'{values[0]}',
         }
-
-        print('data', data)
-
-        return data
 
     def _process_desired_zone(self, desired):
         # TTL is not supported for records in Pi-hole.
