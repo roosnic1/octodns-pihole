@@ -2,7 +2,7 @@
 
 An [octoDNS](https://github.com/octodns/octodns/) provider that targets
 [Pi-hole](https://docs.pi-hole.net). Uses the
-[pihole6api](https://pypi.org/project/pihole6api/) library for API communication.
+[pihole6api](https://pypi.org/project/pihole6api/) library for API communication. Original Idea by [jvoss](https://github.com/jvoss/octodns-pihole) .
 
 Pi-hole version 6 is supported.
 
