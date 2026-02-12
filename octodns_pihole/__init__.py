@@ -75,11 +75,11 @@ class PiholeProvider(BaseProvider):
             # Strip the zone name from the list entry
             name = name.split(zone.name, 1)[0].rstrip('.')
 
-            match ip_address(ip).version:
-                case 4:
-                    values[name]['A'].append(ip)
-                case 6:  # pragma: no cover (this is tested but coverage warns)
-                    values[name]['AAAA'].append(ip)
+            version = ip_address(ip).version
+            if version == 4:
+                values[name]['A'].append(ip)
+            elif version == 6:
+                values[name]['AAAA'].append(ip)
 
         # CNAME "records"
         for entry in pihole_config['config']['dns']['cnameRecords']:
@@ -146,18 +146,19 @@ class PiholeProvider(BaseProvider):
         new = change.new
         params_for = getattr(self, f'_params_for_{new._type}')
         for params in params_for(new):
-            result = None
-            match change.record._type:
-                case 'A' | 'AAAA':
-                    result = self._client.config.add_local_a_record(
-                        params['name'], params['data']
-                    )
-                case 'CNAME':
-                    result = self._client.config.add_local_cname(
-                        params['name'], params['data'], ttl=params['ttl']
-                    )
+            record_type = change.record._type
+            if record_type in ('A', 'AAAA'):
+                result = self._client.config.add_local_a_record(
+                    params['name'], params['data']
+                )
+            elif record_type == 'CNAME':
+                result = self._client.config.add_local_cname(
+                    params['name'], params['data'], ttl=params['ttl']
+                )
+            else:
+                result = None
 
-            if 'error' in result or result is None:
+            if result is None or 'error' in result:
                 raise ValueError(
                     f"Failed to apply change for record: {change.record.name}"
                 )
@@ -170,18 +171,19 @@ class PiholeProvider(BaseProvider):
         existing = change.existing
         params_for = getattr(self, f'_params_for_{existing._type}')
         for params in params_for(existing):
-            result = None
-            match change.record._type:
-                case 'A' | 'AAAA':
-                    result = self._client.config.remove_local_a_record(
-                        params['name'], params['data']
-                    )
-                case 'CNAME':
-                    result = self._client.config.remove_local_cname(
-                        params['name'], params['data'], ttl=params['ttl']
-                    )
+            record_type = change.record._type
+            if record_type in ('A', 'AAAA'):
+                result = self._client.config.remove_local_a_record(
+                    params['name'], params['data']
+                )
+            elif record_type == 'CNAME':
+                result = self._client.config.remove_local_cname(
+                    params['name'], params['data'], ttl=params['ttl']
+                )
+            else:
+                result = None
 
-            if 'error' in result or result is None:
+            if result is None or 'error' in result:
                 raise ValueError(
                     f"Failed to delete the record: {change.record.name}"
                 )
